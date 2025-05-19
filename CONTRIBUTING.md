@@ -1,24 +1,14 @@
-# Contributing to Docs Repository 🚀  
+# Contributing to Repository 🚀  
 
 Thank you for considering contributing to this repository! Follow these guidelines to keep everything organized and effective.  
 
 ## 📌 How to Contribute  
 
 1. **Fork this repository** to your own GitHub account.  
-2. **Clone your fork** to your local machine:  
-   ```bash
-   git clone https://github.com/your-username/docs.git
-3. **Create a new branch** for your changes:
-   ```bash
-   git checkout -b feature-new-doc
-4. **Make your changes** (update documentation, add new sections, improve formatting).
-5. **Commit your changes** with a clear message:
-   ```bash
-   git commit -m "Added new reference for Kubernetes commands"
-6. **Push your changes** back to GitHub:
-   ```bash
-   git push origin feature-new-doc
-7. **Create a Pull Request** describing your changes and why they should be added.
+
+2. **Make your changes** (update documentation, add new sections, improve formatting).
+
+3. **Create a Pull Request** describing your changes and why they should be added.
 
 ✅ **Contribution Guidelines**
 * Use clear and concise language in documentation.
