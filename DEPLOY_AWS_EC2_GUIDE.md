@@ -66,6 +66,6 @@ npm run build
 
 ## Install PM2 and start the application 
 ```bash
-sudo npm install -g pm2
+npm install -g pm2
 pm2 start ecosystem.config.js
 ```
