@@ -20,6 +20,8 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       // kill_timeout: 10000, // Optional: Time to wait for graceful shutdown
     },
+    // You can add more instances with different ports and names, e.g.:
+    /*
     {
       name: 'deploy-aws-ec2-3002', // Distinct name for the second instance
       script: 'npm',
@@ -39,6 +41,6 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       // kill_timeout: 10000, // Optional: Time to wait for graceful shutdown
     }
-    // Add more app entries here with different ports if you want more instances
+    */
   ],
 };

@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Deploy AWS EC2
 
-## Getting Started
+## Description
+This is a Use Case for deploying a web application on an AWS EC2 instance using Nginx and PM2.
+It covers the installation of necessary dependencies, configuration of Nginx, and management of the application using PM2.
 
-First, run the development server:
+## Table of Contents
+- [Deploy AWS EC2](#deploy-aws-ec2)
+  - [Description](#description)
+  - [Table of Contents](#table-of-contents)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+    - [Update system packages](#update-system-packages)
+    - [Install PM2](#install-pm2)
+    - [Configure Nginx](#configure-nginx)
+    - [Clone the repository](#clone-the-repository)
+    - [Install project dependencies, then build the project](#install-project-dependencies-then-build-the-project)
+    - [Start the application](#start-the-application)
+  - [Usage](#usage)
+  - [Contributing](#contributing)
+  - [License](#license)
 
+## Prerequisites
+- An AWS EC2 instance running Ubuntu 20.04 or later
+- SSH access to the instance
+- A domain name pointing to the instance's public IP address (optional)
+
+## Installation
+### Update system packages
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+sudo apt update
+sudo apt upgrade
+sudo apt install build-essential
+sudo apt install nginx
+
+# Install or Update nvm
+# Refer to https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
+# Install Node.js
+nvm install --lts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Install PM2
+```bash
+$ sudo npm install -g pm2
+pm2 -v # Check the version
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Create log directory
+sudo mkdir -p /var/log/pm2
+sudo chown -R $USER:$USER /var/log/pm2
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Configure Nginx
+```bash
+# Create a new Nginx configuration file
+sudo vim /etc/nginx/sites-available/demo
 
-## Learn More
+# Add the following configuration
+server {
+    listen 80;
+    server_name your_domain.com; # Replace with your domain name or public IP address
+    # If you don't have a domain name, you can use the public IP address of your EC2 instance
 
-To learn more about Next.js, take a look at the following resources:
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Back to the terminal...
+sudo ln -s /etc/nginx/sites-available/demo /etc/nginx/sites-enabled/
+sudo nginx -t
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# You should see a message like this:
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
 
-## Deploy on Vercel
+# Restart Nginx
+sudo systemctl restart nginx
+# Or 'service nginx restart' if you are using an older version of Ubuntu
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Clone the repository
+```bash
+git clone https://github.com/wellington-plus/deploy-aws-ec2.git
+cd deploy-aws-ec2
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Install project dependencies, then build the project
+```bash
+# Install project dependencies
+npm install
+
+# Build the project
+npm run build
+```
+
+### Start the application 
+```bash
+pm2 start ecosystem.config.js
+
+# Check the status of the application
+pm2 status
+# You should see the status of each application marked as "online"
+
+# Save the PM2 process list
+# This will save the current process list and its environment
+# so that it can be restored on system startup
+pm2 save
+# If not already done, configure startup script
+# sudo pm2 startup systemd
+# (Follow instructions)
+```
+
+## Usage
+After the deployment, you can access your application by navigating to `http://your_domain.com` in your web browser.
+
+## Contributing
+Guidelines for contributing can be found [here](CONTRIBUTING.md).
+
+## License
+[MIT Licence](LICENSE).
