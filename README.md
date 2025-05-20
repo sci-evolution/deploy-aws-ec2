@@ -46,7 +46,7 @@ nvm install --lts
 
 ### Install PM2
 ```bash
-$ sudo npm install -g pm2
+$ npm install -g pm2
 pm2 -v # Check the version
 
 # Create log directory
@@ -90,12 +90,12 @@ server {
     ssl_protocols TLSv1.2 TLSv1.3;
 
     location / {
-        root /var/www/deploy-aws-ec2/public;
+        root /app/public;
         try_files $uri @fallback_to_deploy_aws_ec2;
     }
 
     location /_next/static {
-        alias /var/www/deploy-aws-ec2/.next/static;
+        alias /app/.next/static;
         expires 1y;
         access_log off;
     }
@@ -123,8 +123,10 @@ sudo systemctl restart nginx
 
 ### Clone the repository
 ```bash
-git clone https://github.com/wellington-plus/deploy-aws-ec2.git
-cd deploy-aws-ec2
+sudo mkdir /app
+sudo chown -R $USER:$USER /app
+cd /app
+git clone https://github.com/wellington-plus/deploy-aws-ec2.git .
 ```
 
 ### Install project dependencies, then build the project
@@ -149,7 +151,7 @@ pm2 status
 # so that it can be restored on system startup
 pm2 save
 # If not already done, configure startup script
-# sudo pm2 startup systemd
+# pm2 startup systemd
 # (Follow instructions)
 ```
 
