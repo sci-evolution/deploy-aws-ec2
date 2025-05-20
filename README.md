@@ -1,8 +1,7 @@
 # Deploy AWS EC2
 
 ## Description
-This is a Use Case for deploying a web application on an AWS EC2 instance using Nginx and PM2.
-It covers the installation of necessary dependencies, SSL certificates, configuration of Nginx, and management of the application using PM2.
+This use case demonstrates how to deploy a web application on an AWS EC2 instance using Nginx and PM2. It includes installing necessary dependencies, setting up SSL certificates, configuring Nginx, and managing the application with PM2.
 
 ## Table of Contents
 - [Deploy AWS EC2](#deploy-aws-ec2)
@@ -21,13 +20,16 @@ It covers the installation of necessary dependencies, SSL certificates, configur
   - [License](#license)
 
 ## Prerequisites
-- An AWS EC2 instance running Ubuntu 20.04 or later
+- An AWS EC2 instance running Ubuntu
 - A Static IP address (Elastic IP) associated with the instance
 - A domain name pointing to the static IP address
 - SSH access to the instance
 - Your own fork of this repository
 
 ## Installation
+
+### SSH into your EC2 instance, then:
+
 ### Update system packages
 ```bash
 sudo apt update
@@ -146,13 +148,14 @@ pm2 start ecosystem.config.js
 pm2 status
 # You should see the status of each application marked as "online"
 
+# Configure startup script
+pm2 startup systemd
+# (Follow instructions)
+
 # Save the PM2 process list
 # This will save the current process list and its environment
 # so that it can be restored on system startup
 pm2 save
-# If not already done, configure startup script
-# pm2 startup systemd
-# (Follow instructions)
 ```
 
 ## Usage
