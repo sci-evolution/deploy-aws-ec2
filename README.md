@@ -71,7 +71,7 @@ sudo certbot certificates
 # Update the default Nginx configuration file
 sudo vim /etc/nginx/sites-available/default
 
-# Add the following configuration
+# Replace the content with the following configuration
 
 # Redirect all HTTP requests to HTTPS
 server {
