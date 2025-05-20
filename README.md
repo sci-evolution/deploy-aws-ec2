@@ -2,7 +2,7 @@
 
 ## Description
 This is a Use Case for deploying a web application on an AWS EC2 instance using Nginx and PM2.
-It covers the installation of necessary dependencies, configuration of Nginx, and management of the application using PM2.
+It covers the installation of necessary dependencies, SSL certificates, configuration of Nginx, and management of the application using PM2.
 
 ## Table of Contents
 - [Deploy AWS EC2](#deploy-aws-ec2)
@@ -22,8 +22,10 @@ It covers the installation of necessary dependencies, configuration of Nginx, an
 
 ## Prerequisites
 - An AWS EC2 instance running Ubuntu 20.04 or later
+- A Static IP address (Elastic IP) associated with the instance
+- A domain name pointing to the static IP address
 - SSH access to the instance
-- A domain name pointing to the instance's public IP address (optional)
+- Your own fork of this repository
 
 ## Installation
 ### Update system packages
@@ -32,6 +34,7 @@ sudo apt update
 sudo apt upgrade
 sudo apt install build-essential
 sudo apt install nginx
+sudo apt install certbot python3-certbot-nginx
 
 # Install or Update nvm
 # Refer to https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script
@@ -51,29 +54,62 @@ sudo mkdir -p /var/log/pm2
 sudo chown -R $USER:$USER /var/log/pm2
 ```
 
+## Configure certbot
+```bash
+sudo certbot --nginx -d your_domain.com -d www.your_domain.com
+# Follow the prompts to set up SSL
+
+# Test the renewal process
+sudo certbot renew --dry-run
+
+# Check if the certificate was installed correctly
+sudo certbot certificates
+```
+
 ### Configure Nginx
 ```bash
-# Create a new Nginx configuration file
-sudo vim /etc/nginx/sites-available/demo
+# Update the default Nginx configuration file
+sudo vim /etc/nginx/sites-available/default
 
 # Add the following configuration
+
+# Redirect all HTTP requests to HTTPS
 server {
     listen 80;
-    server_name your_domain.com; # Replace with your domain name or public IP address
-    # If you don't have a domain name, you can use the public IP address of your EC2 instance
+    server_name your_domain.com www.your_domain.com;
+    return 301 https://$host$request_uri;
+}
+
+# Main HTTPS server block
+server {
+    listen 443 ssl http2;
+    server_name your_domain.com www.your_domain.com;
+
+    ssl_certificate /etc/letsencrypt/live/your_domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your_domain.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
 
     location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        root /var/www/deploy-aws-ec2/public;
+        try_files $uri @fallback_to_deploy_aws_ec2;
+    }
+
+    location /_next/static {
+        alias /var/www/deploy-aws-ec2/.next/static;
+        expires 1y;
+        access_log off;
+    }
+
+    location @fallback_to_deploy_aws_ec2 {
+        proxy_pass http://127.0.0.1:3001;
         proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 
-# Back to the terminal...
-sudo ln -s /etc/nginx/sites-available/demo /etc/nginx/sites-enabled/
+# Back to the terminal... Test the Nginx configuration
 sudo nginx -t
 
 # You should see a message like this:
@@ -118,7 +154,7 @@ pm2 save
 ```
 
 ## Usage
-After the deployment, you can access your application by navigating to `http://your_domain.com` in your web browser.
+After the deployment, you can access your application by navigating to `https://your_domain.com` in your web browser.
 
 ## Contributing
 Guidelines for contributing can be found [here](CONTRIBUTING.md).
